@@ -12,7 +12,7 @@ pipeline {
         }
         stage('build') {
             steps {
-               sh './mvnw clean compile test package'
+               sh './mvnw compile test package'
             }
         }
     }
