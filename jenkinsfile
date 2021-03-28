@@ -1,36 +1,28 @@
 pipeline {
     agent any
     triggers {
-         pollSCM '* * * * *'
+        pollSCM '* * * * *'
     }
 
     stages {
         stage('checkout') {
-           steps {
-              git branch: 'main', url: 'https://github.com/axania/jgsu-spring-petclinic.git'
-           }
-        }
-
-        stage('Build-pipeline') {
             steps {
-               
-               sh '''./mvnw clean compile test package'''
-
-                // Run Maven on a Unix agent.
-               // sh "mvn -Dmaven.test.failure.ignore=true clean package"
-
-                // To run Maven on a Windows agent, use
-                // bat "mvn -Dmaven.test.failure.ignore=true clean package"
-            }
-
-            post {
-                
-                
-                always {
-                    junit 'target/surefire-reports/*.xml'
-                    archiveArtifacts artifacts: 'target/*.jar', followSymlinks: false
-                }
+               git branch: 'main', url: 'https://github.com/axania/jgsu-spring-petclinic.git'
             }
         }
+        stage('build') {
+            steps {
+               sh './mvnw clean compile test package'
+            }
+        }
+    }
+}
+post {
+    always {
+       archiveArtifacts artifacts: 'target/*.jar', followSymlinks: false
+       junit 'target/surefire-reports/*.xml'
+    }
+    changed {
+        emailext body: 'have a look and fix that please', recipientProviders: [requestor(), upstreamDevelopers()], subject: 'failed job', to: 'serges_c@yahoo.fr'
     }
 }
